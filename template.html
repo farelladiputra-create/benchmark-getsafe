@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Benchmark Getsafe: layar, isi, dan yang bisa dicontoh</title>
+<style>
+:root{
+  --bg:#EEF2F7; --surface:#FFFFFF; --muted:#F4F7FB;
+  --ink:#0F1B2D; --ink2:#44546A; --ink3:#8494A8;
+  --line:#D8E0EA; --brand:#003781; --brand-fg:#FFFFFF;
+  --green:#0B7A3E; --green-tint:#DFF2E5; --green-fg:#0B7A3E;
+  --amber:#9A6B00; --amber-tint:#FBF0D9; --amber-fg:#9A6B00;
+  --red:#B3261E; --red-tint:#FBE3E1; --red-fg:#B3261E;
+  --gold:#FFD35C; --gold-ink:#4A3600;
+  --r-lg:16px; --r-md:12px; --r-sm:14px; --r-pill:999px;
+  --s1:8px; --s2:16px; --s3:24px; --s4:32px; --s5:40px; --s6:48px;
+  --t-title:40px; --t-hero:38px; --t-sect:26px; --t-card:20px;
+  --t-body:19px; --t-cell:17px; --t-sec:15.5px; --t-label:14px; --t-foot:13px;
+  --font:'DejaVu Sans',-apple-system,'Segoe UI',Arial,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink2);font:var(--t-body)/1.5 var(--font);
+  padding:var(--s6);-webkit-font-smoothing:antialiased}
+@media(max-width:1100px){body{padding:var(--s3)}}
+.wrap{max-width:1400px;margin:0 auto}
+h1{font-size:var(--t-title);font-weight:bold;color:var(--ink);margin:0 0 var(--s1);line-height:1.15}
+h2{font-size:var(--t-sect);font-weight:bold;color:var(--ink);margin:var(--s6) 0 var(--s1)}
+h3{font-size:var(--t-card);font-weight:bold;color:var(--ink);margin:0 0 var(--s1)}
+p{margin:0 0 var(--s2)}
+.sub{font-size:var(--t-body);color:var(--ink2);margin:0 0 var(--s1)}
+.basis,.how{font-size:var(--t-sec);color:var(--ink3);margin:0 0 var(--s2)}
+.card{background:var(--surface);color:var(--ink);border:1px solid var(--line);
+  border-radius:var(--r-lg);overflow:hidden}
+.pill{display:inline-block;font-size:var(--t-label);padding:0 var(--s1);border-radius:var(--r-pill);
+  line-height:24px;white-space:nowrap}
+.p-grn{background:var(--green-tint);color:var(--green-fg)}
+.p-amb{background:var(--amber-tint);color:var(--amber-fg)}
+.p-red{background:var(--red-tint);color:var(--red-fg)}
+.p-brand{background:var(--brand);color:var(--brand-fg)}
+.p-gold{background:var(--gold);color:var(--gold-ink)}
+.note{background:var(--amber-tint);color:var(--ink);border-left:3px solid var(--amber);
+  padding:var(--s2) var(--s3);border-radius:0 var(--r-md) var(--r-md) 0;
+  font-size:var(--t-cell);margin-top:var(--s3)}
+.foot{font-size:var(--t-foot);color:var(--ink3);margin-top:var(--s3)}
+ul.dash{list-style:none;margin:0 0 var(--s1);padding:0}
+ul.dash li{position:relative;padding-left:18px;margin-bottom:6px}
+ul.dash li:before{content:"";position:absolute;left:0;top:11px;width:6px;height:6px;
+  border-radius:2px;background:var(--brand)}
+ul.dash li:last-child{margin-bottom:0}
+
+.bar{display:flex;flex-wrap:wrap;gap:var(--s2);align-items:center;
+  justify-content:space-between;margin:var(--s4) 0 var(--s3)}
+.chips{display:flex;flex-wrap:wrap;gap:var(--s1)}
+.chip{font-size:var(--t-sec);padding:6px 14px;border-radius:var(--r-pill);
+  border:1px solid var(--line);background:var(--surface);color:var(--ink2);cursor:pointer}
+.chip:hover{border-color:var(--brand);color:var(--brand)}
+.chip.on{background:var(--brand);border-color:var(--brand);color:var(--brand-fg);font-weight:bold}
+.nav{display:flex;gap:var(--s1);align-items:center}
+.btn{font-size:var(--t-sec);padding:8px 16px;border-radius:var(--r-pill);border:1px solid var(--line);
+  background:var(--surface);color:var(--ink);cursor:pointer;font-family:var(--font)}
+.btn:hover{border-color:var(--brand);color:var(--brand)}
+.btn:disabled{opacity:.4;cursor:default}
+
+.stage{display:grid;grid-template-columns:minmax(280px,360px) 1fr;gap:var(--s5);
+  align-items:start}
+@media(max-width:1100px){.stage{grid-template-columns:1fr}}
+.phone{background:#151A21;border-radius:32px;padding:14px;position:sticky;top:var(--s3);
+  border:1px solid var(--line)}
+.shot{width:100%;display:block;border-radius:20px;background:#fff;aspect-ratio:342/760;
+  object-fit:cover;object-position:top}
+.shotcap{font-size:var(--t-foot);color:var(--ink3);margin-top:var(--s1);text-align:center}
+.notecard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
+  padding:var(--s3) var(--s4)}
+.group{font-size:var(--t-label);text-transform:uppercase;letter-spacing:.6px;color:var(--ink3);
+  margin-bottom:6px}
+.blk{margin-top:var(--s2)}
+.blk h4{font-size:var(--t-label);text-transform:uppercase;letter-spacing:.6px;color:var(--ink3);
+  margin:0 0 6px;font-weight:normal}
+.forus{background:var(--green-tint);border-left:3px solid var(--green);
+  border-radius:0 var(--r-md) var(--r-md) 0;padding:var(--s2) var(--s3);margin-top:var(--s3)}
+.forus h4{color:var(--green-fg)}
+.forus ul.dash li:before{background:var(--green)}
+.step{font-size:var(--t-sec);color:var(--ink3);margin-top:var(--s2);display:flex;
+  justify-content:space-between;gap:var(--s2);flex-wrap:wrap}
+.dots{display:flex;gap:6px;margin-top:var(--s2);flex-wrap:wrap}
+.dot{width:9px;height:9px;border-radius:5px;background:var(--line);cursor:pointer;border:0;padding:0}
+.dot.on{background:var(--brand);width:22px;border-radius:5px}
+
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:var(--t-cell)}
+th{text-align:left;font-size:var(--t-label);text-transform:uppercase;letter-spacing:.6px;
+  color:var(--ink3);font-weight:normal;padding:var(--s1) var(--s3);
+  border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:var(--s1) var(--s3);border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink2)}
+tr:last-child td{border-bottom:0}
+td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td b{color:var(--ink);font-weight:bold}
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:var(--s2);
+  margin:var(--s3) 0}
+.kpi .card{padding:var(--s2) var(--s3);display:flex;flex-direction:column;gap:4px}
+.kpi .v{font-size:32px;font-weight:bold;color:var(--ink);font-variant-numeric:tabular-nums;line-height:1.1}
+.kpi .l{font-size:var(--t-label);text-transform:uppercase;letter-spacing:.6px;color:var(--ink3)}
+.kpi .f{font-size:var(--t-sec);color:var(--ink2)}
+.kpi .card.pri{border:2px solid var(--brand)}
+.finding{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--brand);
+  border-radius:0 var(--r-md) var(--r-md) 0;padding:var(--s2) var(--s3);margin-bottom:var(--s2)}
+.finding.g{border-left-color:var(--green)}
+.finding.a{border-left-color:var(--amber)}
+.finding.r{border-left-color:var(--red)}
+.finding h3{font-size:var(--t-card);margin:0 0 4px}
+.finding .st{font-weight:bold;color:var(--ink);font-variant-numeric:tabular-nums}
+.finding p{margin:0 0 4px;font-size:var(--t-cell)}
+.finding hr{border:0;border-top:1px solid var(--line);margin:var(--s1) 0}
+.finding .act{font-weight:bold;color:var(--ink);font-size:var(--t-cell)}
+details.fold{margin-top:var(--s2);background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--r-lg);padding:0 var(--s3)}
+details.fold>summary{cursor:pointer;padding:var(--s2) 0;font-size:var(--t-card);font-weight:bold;
+  color:var(--ink);list-style:none;display:flex;align-items:center;gap:10px}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary:before{content:"+";width:22px;color:var(--brand);font-weight:bold;font-size:22px;line-height:1}
+details.fold[open]>summary:before{content:"\2212"}
+details.fold>summary:hover{color:var(--brand)}
+details.fold .how{margin:0 0 var(--s2)}
+details.fold .foot{margin-bottom:var(--s2)}
+.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:var(--s2)}
+.thumb{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:var(--s1)}
+.thumb img{width:100%;display:block;border-radius:6px}
+.thumb span{font-size:var(--t-foot);color:var(--ink3);display:block;margin-top:4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Benchmark Getsafe</h1>
+<p class="sub">Insurance Jerman yang sekarang jadi perantara. Semua layar di bawah difoto dari app aslinya.</p>
+<p class="basis">Sumber: app de.getsafe.nxt versi 19.2.0 di emulator Android, akun baru, 21 sampai 22 Oktober 2026. Harga EUR per bulan.</p>
+
+<div class="kpi">
+  <div class="card pri">
+    <span class="l">Produk</span><span class="v">12</span>
+    <span class="f">Harga EUR 2,40 sampai 200,00 per bulan</span>
+  </div>
+  <div class="card">
+    <span class="l">Hadiah referral</span><span class="v">EUR 30</span>
+    <span class="f">Teman dapat EUR 15</span>
+  </div>
+  <div class="card">
+    <span class="l">Syaratnya</span><span class="v">1 polis</span>
+    <span class="f">Teman harus bayar polis pertama</span>
+  </div>
+  <div class="card">
+    <span class="l">Pengguna</span><span class="v">500 rb</span>
+    <span class="f">Rating 4,5, disebut di pesan referral</span>
+  </div>
+  <div class="card">
+    <span class="l">Bug</span><span class="v">3</span>
+    <span class="f">Postcode dobel, SMS dilewati, notifikasi mati</span>
+  </div>
+</div>
+
+<div class="bar">
+  <div class="chips" id="chips"></div>
+  <div class="nav">
+    <button class="btn" id="prev">&#8249; Balik</button>
+    <button class="btn" id="next">Lanjut &#8250;</button>
+  </div>
+</div>
+
+<div class="stage">
+  <div class="phone">
+    <img class="shot" id="shot" alt="">
+    <div class="shotcap" id="shotcap"></div>
+    <div class="dots" id="dots"></div>
+  </div>
+  <div class="notecard" id="notes"></div>
+</div>
+
+<details class="fold"><summary>Semua produk dan harganya</summary>
+<p class="how">Harga di app ditulis sebagai "from", jadi ini batas bawah, bukan harga akhir. Label ikut dari tampilan app.</p>
+<div class="card scroll">
+<table>
+<thead><tr><th>Produk</th><th>Kategori</th><th>Label</th><th class="n">Per bulan</th><th class="n">Poin</th></tr></thead>
+<tbody>
+<tr><td><b>Liability</b></td><td>Liability &amp; Legal</td><td><span class="pill p-red">Wajib</span></td><td class="n">EUR 2,94</td><td class="n">60.000</td></tr>
+<tr><td>Legal Insurance</td><td>Liability &amp; Legal</td><td></td><td class="n">EUR 16,00</td><td class="n">tidak ada info</td></tr>
+<tr><td>Private Health Insurance</td><td>Health</td><td></td><td class="n">EUR 200,00</td><td class="n">tidak ada info</td></tr>
+<tr><td>Dental</td><td>Health</td><td></td><td class="n">EUR 16,50</td><td class="n">tidak ada info</td></tr>
+<tr><td>Long-Term Care</td><td>Long-Term Care</td><td></td><td class="n">EUR 45,00</td><td class="n">tidak ada info</td></tr>
+<tr><td>Contents</td><td>Living</td><td><span class="pill p-amb">Boleh ditunda</span></td><td class="n">EUR 3,00</td><td class="n">tidak ada info</td></tr>
+<tr><td>Pet Health Insurance</td><td>Pet</td><td></td><td class="n">EUR 6,00</td><td class="n">tidak ada info</td></tr>
+<tr><td>Dog Liability</td><td>Pet</td><td></td><td class="n">EUR 2,40</td><td class="n">tidak ada info</td></tr>
+<tr><td>Income Protection</td><td>Prevention &amp; Finance</td><td><span class="pill p-red">Wajib</span></td><td class="n">EUR 24,00</td><td class="n">150.000</td></tr>
+<tr><td>Private Pension</td><td>Prevention &amp; Finance</td><td><span class="pill p-red">Wajib</span></td><td class="n">EUR 25,00</td><td class="n">150.000</td></tr>
+<tr><td>Children's Savings Plan</td><td>Prevention &amp; Finance</td><td></td><td class="n">EUR 25,00</td><td class="n">tidak ada info</td></tr>
+<tr><td>Term Life Insurance</td><td>Prevention &amp; Finance</td><td></td><td class="n">EUR 9,90</td><td class="n">tidak ada info</td></tr>
+</tbody>
+</table>
+</div>
+<p class="foot">Poin hanya ditulis di app untuk Liability, Income Protection, dan Private Pension. Untuk produk lain app tidak menampilkan angka, jadi ditandai "tidak ada info". Jumlah harga bawah per bulan: EUR 385,74.</p>
+</details>
+
+<details class="fold"><summary>Tiap produk melindungi apa, sampai berapa</summary>
+<p class="how">Ini isi halaman detail tiap produk: apa yang dibayar dan batas angkanya. Kalau app tidak menulis angka, kolom batas ditulis "tidak ditulis" biar kelihatan mana yang kosong.</p>
+<div class="card scroll">
+<table>
+<thead><tr><th>Produk</th><th>Yang dilindungi</th><th>Batas maksimal</th></tr></thead>
+<tbody>
+<tr><td><b>Liability</b></td><td>Rusak barang orang lain, rugi uang orang lain. Bisa ditambah untuk keluarga dan drone. Berlaku di seluruh dunia.</td><td><b>EUR 50 juta</b></td></tr>
+<tr><td>Legal Insurance</td><td>Sengketa kerja, urusan pribadi, lalu lintas, sama pemilik kontrakan.</td><td>tidak ditulis. Ada masa tunggu 3 bulan.</td></tr>
+<tr><td>Private Health</td><td>Dokter lebih cepat, spesialis, gigi mata telinga tanpa batasan, cek pencegahan. Bonus kalau tidak klaim.</td><td>tidak ditulis</td></tr>
+<tr><td>Dental</td><td>Pembersihan gigi, bleaching, tarif dokter gigi di atas standar. Aktif dari hari pertama.</td><td>Pembersihan <b>tanpa batas</b>. Bleaching <b>EUR 200 tiap 2 tahun</b>.</td></tr>
+<tr><td>Long-Term Care</td><td>Tunjangan bulanan tanpa kuitansi, level rawat 1 sampai 5, di seluruh dunia.</td><td><b>EUR 9.000 sekali</b> kalau level 4 atau 5</td></tr>
+<tr><td>Contents</td><td>Maling, perampokan, vandalisme, kebakaran, air bocor, badai. Diganti barang baru, walau kamu ceroboh. Di luar rumah sampai 12 bulan.</td><td>tidak ditulis, bayar seharga barang baru</td></tr>
+<tr><td>Pet Health</td><td>Biaya dokter hewan, operasi, obat, pencegahan. Bebas pilih dokter.</td><td><b>EUR 5.000</b>, sampai 100% biaya, sampai 4x tarif Jerman</td></tr>
+<tr><td>Dog Liability</td><td>Anjing melukai orang lain, melukai anjing lain, merusak barang orang. Semua ras diterima.</td><td><b>EUR 50 juta per kejadian</b></td></tr>
+<tr><td>Income Protection</td><td>Uang masuk tetap jalan kalau kena burnout, sakit berat, nyeri kronis, atau kecelakaan.</td><td>tidak ditulis, tawaran dibuat per orang</td></tr>
+<tr><td>Private Pension</td><td>Bayaran bulanan seumur pensiun, kontribusi bisa dijeda, ada keringanan pajak.</td><td>tidak ditulis</td></tr>
+<tr><td>Children's Savings</td><td>Nabung lewat reksa dana untuk SIM, kuliah, atau tinggal di luar negeri.</td><td>tidak ditulis</td></tr>
+<tr><td>Term Life</td><td>Uang untuk keluarga kalau kamu meninggal, dibayar ke mana pun mereka berada.</td><td>tidak ditulis, pengajuan lewat janji temu</td></tr>
+</tbody>
+</table>
+</div>
+<p class="foot">Tujuh dari dua belas produk tidak menulis angka maksimal di halaman detail. Yang jelas angkanya cuma Liability, Dog Liability, Dental, Long-Term Care, dan Pet Health. Ini celah buat kita: tulis plafon di halaman jualan, karena orang beli proteksi tanpa tahu batasnya.</p>
+</details>
+
+<details class="fold"><summary>Referral: di mana, kapan, dan kenapa jalan</summary>
+<p class="how">Bagian ini menjawab "kapan referral muncul dan bagaimana cara mereka bikin orang tertarik". Semua dari app yang dijalankan.</p>
+
+<div class="finding g">
+  <h3>Di mana: posisi dua di halaman Profile</h3>
+  <p class="st">Tepat di bawah nama, di atas Payment and billing</p>
+  <p>Banner besar, ada foto, ada tombol. Bukan di Settings, bukan di kaki halaman. Orang yang sudah aktif paling tahu nilainya.</p>
+  <hr>
+  <p class="act">Ambil: taruh banner referral di atas halaman Profile.</p>
+</div>
+
+<div class="finding g">
+  <h3>Kapan: tanpa syarat polis aktif</h3>
+  <p class="st">Banner muncul begitu akun dibuat, sebelum beli apa pun</p>
+  <p>Akun uji belum punya polis, tapi banner sudah tampil. Kalau baru terbuka setelah beli, yang bisa mengundang cuma pelanggan lama.</p>
+  <hr>
+  <p class="act">Ambil: buka referral tanpa syarat polis aktif.</p>
+</div>
+
+<div class="finding a">
+  <h3>Hadiah: dua pihak, disebut dua kali</h3>
+  <p class="st">EUR 30 untuk yang mengundang, EUR 15 untuk yang diundang</p>
+  <p>Banner menyebut EUR 30 untuk pengundang dan EUR 15 untuk teman. Bukan "earn rewards" yang kabur. Hadiahnya credit untuk potong premi, satu saldo dengan Safepoints.</p>
+  <hr>
+  <p class="act">Ambil: sebut nominal dua pihak sekaligus, cairkan lewat saldo yang sama dengan program loyalitas.</p>
+</div>
+
+<div class="finding r">
+  <h3>Celah: pesan yang dikirim tidak menyebut hadiah</h3>
+  <p class="st">Pesannya: "Join me and over 500,000 users... use code FEXD-KRL3 to claim your gift."</p>
+  <p>Link berbrand, jadi bisa dilacak. Tapi pesan tidak menyebut EUR 15 dan tidak menyebut syarat beli polis. Teman baru tahu setelah buka link.</p>
+  <hr>
+  <p class="act">Ambil: tulis nominal dan syaratnya di dalam pesan yang dikirim, bukan cuma di app.</p>
+</div>
+
+<div class="finding g">
+  <h3>Halaman aturan: teman buka web, bukan app</h3>
+  <p class="st">"You received EUR 15 Getsafe credit." langsung di atas layar</p>
+  <p>Link membuka web, bukan app store. Teman tidak perlu install. EUR 15 langsung terlihat, plus bukti sosial 500.000 pelanggan dan rating 4,5.</p>
+  <hr>
+  <p class="act">Ambil: halaman undangan di web, nominal di atas, bukti sosial di bawahnya.</p>
+</div>
+
+<div class="finding a">
+  <h3>Timing: setelah beli, bukan setelah daftar</h3>
+  <p class="st">"After they buy their first insurance"</p>
+  <p>Reward cair setelah polis pertama dibayar. Ini menyaring yang tidak serius, tapi lambat, karena insurance jarang dibeli.</p>
+  <hr>
+  <p class="act">Ambil: bagi reward jadi dua tahap, awal dan akhir.</p>
+</div>
+</details>
+
+<details class="fold"><summary>Enam pelajaran yang bisa dipakai</summary>
+<p class="how">Dari yang paling mudah ditiru.</p>
+
+<div class="finding">
+  <h3>1. Satu angka untuk satu sistem</h3>
+  <p class="st">+60.000 di katalog, 2.000 di Safepoints, 60.000 di halaman produk</p>
+  <p>Angka yang sama muncul di banyak layar, jadi terasa satu sistem, bukan tiga fitur.</p>
+  <hr>
+  <p class="act">Ambil: pakai format angka yang sama persis di semua layar.</p>
+</div>
+
+<div class="finding">
+  <h3>2. Label prioritas dengan alasan</h3>
+  <p class="st">12 produk, tapi hanya 4 yang dilabeli di home</p>
+  <p>Sisanya di tab Products. Pilihan dipangkas tanpa menyembunyikan produk.</p>
+  <hr>
+  <p class="act">Ambil: label tiga tingkat, dan pakai untuk mengatur urutan di home.</p>
+</div>
+
+<div class="finding">
+  <h3>3. Klaim dipandu, bukan form panjang</h3>
+  <p class="st">"Our chatbot guides you through your claim, step by step."</p>
+  <p>Di momen panik, orang dapat urutan langkah. Tawaran Safepoints ikut di halaman itu.</p>
+  <hr>
+  <p class="act">Ambil: stepper untuk klaim, cross-sell di halaman yang sama.</p>
+</div>
+
+<div class="finding">
+  <h3>4. Janji yang bisa diuji, bukan jargon</h3>
+  <p class="st">"We alert you to gaps, important dates and unnecessary costs"</p>
+  <p>Getsafe sekarang perantara, bukan pemilik polis. Trust dibangun dari janji yang bisa diuji, bukan status perusahaan.</p>
+  <hr>
+  <p class="act">Ambil: janjikan hal yang bisa diuji pengguna, bukan status perusahaan.</p>
+</div>
+
+<div class="finding">
+  <h3>5. Menu dibuat dari pertanyaan asli</h3>
+  <p class="st">"Which insurance is best for me?" adalah tombol</p>
+  <p>Pertanyaan yang paling sering masuk CS jadi tombol. Dukungan berkurang, dan jadi peta kebutuhan produk.</p>
+  <hr>
+  <p class="act">Ambil: catat 4 pertanyaan support paling sering, jadikan tombol.</p>
+</div>
+
+<div class="finding">
+  <h3>6. Alasan keluar dari flow wajib dikumpulkan</h3>
+  <p class="st">Popup "What's stopping you right now?" dengan 6 pilihan</p>
+  <p>Saat orang lewati broker mandate, app tidak melepas diam-diam. Enam alasan ditanya: tidak yakin, tidak mau ubah polis, sudah punya broker, khawatir data, tidak ada waktu, lain-lain.</p>
+  <hr>
+  <p class="act">Ambil: tangkap alasan keluar dari flow wajib, pakai untuk perbaikan, bukan cuma angka drop-off.</p>
+</div>
+</details>
+
+<details class="fold"><summary>Tiga bug yang harus dibenerin</summary>
+<div class="card scroll">
+<table>
+<thead><tr><th>Masalah</th><th>Yang terjadi</th><th>Dampak</th><th>Prioritas</th></tr></thead>
+<tbody>
+<tr><td><b>Postcode dobel</b></td><td>Saat diketik ulang, saran kode pos menimpanya jadi 1017810178. Kalau sudah terisi dari profil, tidak terjadi.</td>
+<td>Alamat salah masuk ke hitungan premi. Ini data, bukan tampilan.</td><td><span class="pill p-red">P0</span></td></tr>
+<tr><td><b>Verifikasi SMS dilewati</b></td><td>Nomor +62 diterima tanpa kode SMS.</td>
+<td>Siapa pun bisa daftar tanpa memegang nomornya. Celah untuk penilaian risiko.</td><td><span class="pill p-red">P0</span></td></tr>
+<tr><td><b>Notifikasi mati sejak awal</b></td><td>Izin notifikasi decline saat onboarding, banner baru muncul di halaman Service.</td>
+<td>Notifikasi itu lifeline buat klaim. Banner muncul terlambat, di halaman yang jarang dibuka.</td><td><span class="pill p-amb">P1</span></td></tr>
+</tbody>
+</table>
+</div>
+</details>
+
+<details class="fold"><summary>Sisanya: foto semua layar</summary>
+<p class="how">Semua tangkapan layar asli, tanpa yang dipotong.</p>
+<div class="thumbs" id="thumbs"></div>
+</details>
+
+<div class="note">
+<b>Batasan.</b> Semua layar dari satu akun baru di emulator, jadi alur yang butuh polis aktif tidak bisa dibuka: checkout, klaim, dan isi detail setelah pilih plan. Harga yang tampil adalah harga "from", bukan harga akhir. Angka Safepoints untuk produk selain liability, income protection, dan private pension tidak ditampilkan app, jadi ditandai "tidak ada info".
+</div>
+
+<p class="foot">Disusun dari app de.getsafe.nxt versi 19.2.0 di emulator Android, akun baru, 21 Oktober 2026. Foto asli ada di folder <b>layar-asli</b>. File ini untuk lihat interaksi, bukan app beneran.</p>
+
+</div>
+
+<script>
+const DATA = __DATA__;
+const S = DATA.screens, IMG = DATA.imgs;
+let cur = 0;
+
+const el = {
+  shot:document.getElementById('shot'), shotcap:document.getElementById('shotcap'),
+  notes:document.getElementById('notes'), chips:document.getElementById('chips'),
+  dots:document.getElementById('dots'), prev:document.getElementById('prev'),
+  next:document.getElementById('next'), thumbs:document.getElementById('thumbs')
+};
+function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function list(items){return '<ul class="dash">'+items.map(i=>'<li>'+esc(i)+'</li>').join('')+'</ul>'}
+
+function render(){
+  const s = S[cur];
+  el.shot.src = 'data:image/jpeg;base64,' + IMG[s.img];
+  el.shotcap.textContent = s.imglabel;
+  el.notes.innerHTML =
+    '<div class="group">'+esc(s.group)+'</div>' +
+    '<h3>'+esc(s.title)+'</h3>' +
+    '<div class="blk"><h4>Isinya apa aja</h4>'+list(s.what)+'</div>' +
+    '<div class="blk"><h4>Kenapa dibikin gitu</h4>'+list(s.why)+'</div>' +
+    '<div class="blk forus"><h4>Bisa dicontoh</h4>'+list(s.forus)+'</div>' +
+    '<div class="step"><span>Layar '+(cur+1)+' dari '+S.length+'</span><span>'+esc(s.id)+'</span></div>';
+  el.dots.innerHTML = S.map((x,i)=>'<button class="dot'+(i===cur?' on':'')+'" data-i="'+i+'" aria-label="Layar '+(i+1)+'"></button>').join('');
+  Array.from(el.dots.children).forEach(d=>d.onclick=()=>{cur=+d.dataset.i;render()});
+  el.prev.disabled = cur===0; el.next.disabled = cur===S.length-1;
+  Array.from(el.chips.children).forEach(c=>c.classList.toggle('on', +c.dataset.i===cur));
+}
+
+const groups=[]; S.forEach((s,i)=>{ if(!groups.find(g=>g.name===s.group)) groups.push({name:s.group,first:i}); });
+el.chips.innerHTML = groups.map(g=>'<button class="chip" data-i="'+g.first+'">'+esc(g.name)+'</button>').join('');
+Array.from(el.chips.children).forEach(c=>c.onclick=()=>{cur=+c.dataset.i;render()});
+
+el.prev.onclick=()=>{ if(cur>0){cur--;render()} };
+el.next.onclick=()=>{ if(cur<S.length-1){cur++;render()} };
+document.addEventListener('keydown',e=>{ if(e.key==='ArrowLeft')el.prev.click(); if(e.key==='ArrowRight')el.next.click(); });
+
+el.thumbs.innerHTML = Object.keys(IMG).map(k=>
+  '<div class="thumb"><img src="data:image/jpeg;base64,'+IMG[k]+'" alt=""><span>'+esc(k.replace('.jpg',''))+'</span></div>'
+).join('');
+
+render();
+</script>
+</body>
+</html>
